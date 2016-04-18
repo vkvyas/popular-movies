@@ -35,14 +35,16 @@ public class MoviesAdapter extends RecyclerView.Adapter<ImageViewHolder> {
 
     @Override
     public void onBindViewHolder(final ImageViewHolder holder, final int position) {
+        final MovieBean movieBean = mLstMovies.get(position);
         Picasso.with(mContext)
-                .load(HTTP_BASE_URL_FOR_IMAGES + mLstMovies.get(position).getPosterPath())
+                .load(HTTP_BASE_URL_FOR_IMAGES + movieBean.getPosterPath())
                 .into(holder.imageView);
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Context context = v.getContext();
                 Intent intent = new Intent(context, MovieDetailsActivity.class);
+                intent.putExtra(MovieDetailsActivity.MOVIE_PARCEL, movieBean);
                 context.startActivity(intent);
             }
         });
