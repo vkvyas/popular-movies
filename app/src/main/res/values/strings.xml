@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_movie_sort_order_title">Sort order</string>
+    <string-array name="pref_movie_sort_order_list_titles">
+        <item>Most popular</item>
+        <item>Top rated</item>
+    </string-array>
 </resources>
