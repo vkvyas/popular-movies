@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.SupportMenuInflater;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -18,7 +17,6 @@ import android.view.MenuItem;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -55,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             apiUrl.append("/movie/top_rated");
         }
-        apiUrl.append("?api_key=b6267c089cade0eccdb1732984aa12b9");
+        apiUrl.append("?api_key=" + BuildConfig.THE_MOVIE_DB_API_KEY);
         new FetchMoviesTask(recyclerView).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, apiUrl.toString());
         Log.d(TAG, apiUrl.toString());
     }
