@@ -3,6 +3,7 @@ package com.example.popularmovies.parser;
 import android.text.TextUtils;
 
 import com.example.popularmovies.models.MovieBean;
+import com.example.popularmovies.models.MovieReview;
 import com.example.popularmovies.models.MovieTrailer;
 
 import org.json.JSONArray;
@@ -60,5 +61,24 @@ public class MoviesDataParser {
             lstMovieTrailers.add(movieTrailer);
         }
         return lstMovieTrailers;
+    }
+
+    public static List<MovieReview> getMovieReviews(String jsonReviewsString) throws JSONException {
+        if (TextUtils.isEmpty(jsonReviewsString))
+            return Collections.EMPTY_LIST;
+        JSONObject jsonObject = new JSONObject(jsonReviewsString);
+        JSONArray jsonArray = jsonObject.getJSONArray("results");
+        List<MovieReview> lstMovieReviews = new ArrayList<>();
+        int length = jsonArray.length();
+        for (int i = 0; i < length; i++) {
+            MovieReview movieReview = new MovieReview();
+            JSONObject jsonMovieReview = jsonArray.getJSONObject(i);
+            movieReview.setId(jsonMovieReview.getString("id"));
+            movieReview.setAuthor(jsonMovieReview.getString("author"));
+            movieReview.setContent(jsonMovieReview.getString("content"));
+            movieReview.setUrl(jsonMovieReview.getString("url"));
+            lstMovieReviews.add(movieReview);
+        }
+        return lstMovieReviews;
     }
 }
