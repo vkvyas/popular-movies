@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.popularmovies.models.MovieBean;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

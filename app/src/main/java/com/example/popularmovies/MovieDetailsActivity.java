@@ -1,18 +1,36 @@
 package com.example.popularmovies;
 
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.popularmovies.models.MovieBean;
+import com.example.popularmovies.models.MovieTrailer;
+import com.example.popularmovies.parser.MoviesDataParser;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
     public static final String MOVIE_PARCEL = "movie_parcel";
-
+    private static final String TAG = "MovieDetailsActivity";
+    ViewGroup lytTrailers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +41,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         final TextView txtRating = (TextView) findViewById(R.id.txtRating);
         final TextView txtReleaseDate = (TextView) findViewById(R.id.txtReleaseDate);
         final ImageView imgPoster = (ImageView) findViewById(R.id.imgPoster);
+        lytTrailers = (ViewGroup) findViewById(R.id.lytTrailers);
 
         final MovieBean movieBean = getIntent().getParcelableExtra(MOVIE_PARCEL);
         if (movieBean != null) {
@@ -34,5 +53,44 @@ public class MovieDetailsActivity extends AppCompatActivity {
         Picasso.with(getApplicationContext())
                 .load(MoviesAdapter.HTTP_BASE_URL_FOR_IMAGES + movieBean.getPosterPath())
                 .into(imgPoster);
+
+        HttpUrl.Builder urlBuilder =
+                HttpUrl.parse(MainActivity.THE_MOVIE_DB_BASE_URL + "/movie/" + movieBean.getId() + "/videos").newBuilder();
+        urlBuilder.addQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
+        String url = urlBuilder.build().toString();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Log.d(TAG, url);
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String responseData = response.body().string();
+                try {
+                    final List<MovieTrailer> movieTrailers = MoviesDataParser.getMovieTrailers(responseData);
+                    MovieDetailsActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final LayoutInflater layoutInflater = getLayoutInflater();
+                            Log.d(TAG, "no of trailers " + movieTrailers.size());
+                            for (MovieTrailer movieTrailer : movieTrailers) {
+                                final ViewGroup rowTrailer = (ViewGroup) layoutInflater.inflate(R.layout.row_trailer, lytTrailers, false);
+                                TextView txtTrailer = (TextView) rowTrailer.findViewById(R.id.txtTrailer);
+                                txtTrailer.setText(movieTrailer.getName());
+                                lytTrailers.addView(rowTrailer);
+                            }
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }

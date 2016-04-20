@@ -1,6 +1,9 @@
-package com.example.popularmovies;
+package com.example.popularmovies.parser;
 
 import android.text.TextUtils;
+
+import com.example.popularmovies.models.MovieBean;
+import com.example.popularmovies.models.MovieTrailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +20,7 @@ public class MoviesDataParser {
 
     public static List<MovieBean> getMovies(String jsonMoviesString) throws JSONException {
         if (TextUtils.isEmpty(jsonMoviesString))
-            return Collections.emptyList();
+            return Collections.EMPTY_LIST;
 
         JSONObject jsonObject = new JSONObject(jsonMoviesString);
         JSONArray results = jsonObject.getJSONArray("results");
@@ -39,4 +42,23 @@ public class MoviesDataParser {
         return lstMovies;
     }
 
+    public static List<MovieTrailer> getMovieTrailers(String jsonMoviesString) throws JSONException {
+        if (TextUtils.isEmpty(jsonMoviesString))
+            return Collections.EMPTY_LIST;
+        JSONObject jsonObject = new JSONObject(jsonMoviesString);
+        JSONArray jsonArray = jsonObject.getJSONArray("results");
+        List<MovieTrailer> lstMovieTrailers = new ArrayList<>();
+        int length = jsonArray.length();
+        for (int i = 0; i < length; i++) {
+            MovieTrailer movieTrailer = new MovieTrailer();
+            JSONObject jsonMovieTrailer = jsonArray.getJSONObject(i);
+            movieTrailer.setId(jsonMovieTrailer.getString("id"));
+            movieTrailer.setKey(jsonMovieTrailer.getString("key"));
+            movieTrailer.setName(jsonMovieTrailer.getString("name"));
+            movieTrailer.setSite(jsonMovieTrailer.getString("site"));
+            movieTrailer.setType(jsonMovieTrailer.getString("type"));
+            lstMovieTrailers.add(movieTrailer);
+        }
+        return lstMovieTrailers;
+    }
 }

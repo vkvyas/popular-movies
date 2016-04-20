@@ -14,6 +14,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.example.popularmovies.models.MovieBean;
+import com.example.popularmovies.parser.MoviesDataParser;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     public static final String TAG = "PM_TAG";
     private StringBuilder apiUrl;
+    public static final String THE_MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         final String moviesSortOrder = prefs.getString("movies_sort_order", null);
         apiUrl = new StringBuilder();
-        apiUrl.append("https://api.themoviedb.org/3");
+        apiUrl.append(THE_MOVIE_DB_BASE_URL);
         if (TextUtils.isEmpty(moviesSortOrder) || moviesSortOrder.equalsIgnoreCase("Most popular")) {
             apiUrl.append("/movie/popular");
         } else {
