@@ -14,9 +14,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.example.popularmovies.data.api.MoviesApi;
-import com.example.popularmovies.data.provider.MoviesContract;
 import com.example.popularmovies.models.MovieBean;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -25,7 +26,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.example.popularmovies.data.provider.MoviesContract.*;
+import static com.example.popularmovies.data.provider.MoviesContract.Movies;
+import static com.example.popularmovies.data.provider.MoviesContract.MoviesColumns;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,8 +42,30 @@ public class MainActivity extends AppCompatActivity {
         setupRecyclerView();
     }
 
-    private void loadFavoriteMovies() {
+    private List<MovieBean> getSavedMovies() {
         final Cursor cursor = getContentResolver().query(Movies.CONTENT_URI, null, null, null, null);
+        if (cursor != null && cursor.getCount() > 0) {
+            try {
+                List<MovieBean> lstMovies = new ArrayList<>();
+                while (cursor.moveToNext()) {
+                    MovieBean movieBean = new MovieBean();
+                    movieBean.setId(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_ID)));
+                    movieBean.setOriginalTitle(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_ORIGINAL_TITLE)));
+                    movieBean.setOverview(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_OVERVIEW)));
+                    movieBean.setPosterPath(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_POSTER_PATH)));
+                    movieBean.setReleaseDate(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_RELEASE_DATE)));
+                    movieBean.setTitle(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_TITLE)));
+                    movieBean.setVoteAverage(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_VOTE_AVERAGE)));
+                    movieBean.setVoteCount(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_VOTE_COUNT)));
+                    lstMovies.add(movieBean);
+                }
+                return lstMovies;
+            } finally {
+                cursor.close();
+            }
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
 
     private void getMovies(String moviesSortOrder) {
@@ -50,11 +74,17 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         MoviesApi moviesApi = retrofit.create(MoviesApi.class);
-        Call<MovieBean.Response> moviesCall;
+        Call<MovieBean.Response> moviesCall = null;
         if (TextUtils.isEmpty(moviesSortOrder) || moviesSortOrder.equalsIgnoreCase("Most popular")) {
             moviesCall = moviesApi.popularMovies();
+        } else if (moviesSortOrder.equalsIgnoreCase("favorites")) {
+            final List<MovieBean> savedMovies = getSavedMovies();
+            recyclerView.setAdapter(new MoviesAdapter(recyclerView.getContext(), savedMovies));
         } else {
             moviesCall = moviesApi.topRatedMovies();
+        }
+        if (moviesCall == null) {
+            return;
         }
         moviesCall.enqueue(new Callback<MovieBean.Response>() {
             @Override

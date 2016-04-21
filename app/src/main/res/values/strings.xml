@@ -8,6 +8,7 @@
     <string-array name="pref_movie_sort_order_list_titles">
         <item>Most popular</item>
         <item>Top rated</item>
+        <item>Favorites</item>
     </string-array>
 
     <string name="content_authority">com.example.popularmovies</string>
