@@ -1,14 +1,19 @@
 package com.example.popularmovies.fragments;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -78,16 +83,30 @@ public class MovieDetailsFragment extends Fragment {
         loadTrailers(movieBean);
         loadReviews(movieBean);
 
-        View btnFavorites = viewGroup.findViewById(R.id.btnFavorites);
-        btnFavorites.setOnClickListener(new View.OnClickListener() {
+        CheckBox btnFavorites = (CheckBox) viewGroup.findViewById(R.id.btnFavorites);
+        final ContentResolver contentResolver = getContext().getContentResolver();
+        if (isMovieFavourite(movieBean)) {
+            btnFavorites.setChecked(true);
+        }
+        btnFavorites.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                Uri insert = getContext().getContentResolver()
-                        .insert(Movies.CONTENT_URI, Movies.toContentValues(movieBean));
-                Log.d(TAG, "Uri result " + insert.toString());
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                final Uri uri = Uri.withAppendedPath(Movies.CONTENT_URI, movieBean.getId());
+                if (isChecked) {
+                    contentResolver.insert(uri, Movies.toContentValues(movieBean)
+                    );
+                } else {
+                    contentResolver.delete(uri, null, null);
+                }
             }
         });
         return viewGroup;
+    }
+
+    private boolean isMovieFavourite(MovieBean movieBean) {
+        final Cursor cursor = getContext().getContentResolver()
+                .query(Uri.withAppendedPath(Movies.CONTENT_URI, movieBean.getId()), null, null, null, null);
+        return (cursor != null && cursor.getCount() > 0);
     }
 
     private void loadTrailers(MovieBean movieBean) {
@@ -111,10 +130,14 @@ public class MovieDetailsFragment extends Fragment {
                 final String responseData = response.body().string();
                 try {
                     final List<MovieTrailer> movieTrailers = MoviesDataParser.getMovieTrailers(responseData);
-                    getActivity().runOnUiThread(new Runnable() {
+                    final FragmentActivity activity = getActivity();
+                    if (activity == null) {
+                        return;
+                    }
+                    activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            final LayoutInflater layoutInflater = getActivity().getLayoutInflater();
+                            final LayoutInflater layoutInflater = activity.getLayoutInflater();
                             Log.d(TAG, "no of trailers " + movieTrailers.size());
                             for (MovieTrailer movieTrailer : movieTrailers) {
                                 final ViewGroup rowTrailer = (ViewGroup) layoutInflater.inflate(R.layout.row_trailer, lytTrailers, false);
@@ -165,10 +188,14 @@ public class MovieDetailsFragment extends Fragment {
                 final String responseData = response.body().string();
                 try {
                     final List<MovieReview> movieReviews = MoviesDataParser.getMovieReviews(responseData);
-                    getActivity().runOnUiThread(new Runnable() {
+                    final FragmentActivity activity = getActivity();
+                    if (activity == null) {
+                        return;
+                    }
+                    activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            final LayoutInflater layoutInflater = getActivity().getLayoutInflater();
+                            final LayoutInflater layoutInflater = activity.getLayoutInflater();
                             Log.d(TAG, "no of reviews " + movieReviews.size());
                             for (MovieReview movieReview : movieReviews) {
                                 final ViewGroup rowReview = (ViewGroup) layoutInflater.inflate(R.layout.row_review, lytReviews, false);

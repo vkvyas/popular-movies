@@ -2,6 +2,7 @@ package com.example.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.example.popularmovies.data.api.MoviesApi;
+import com.example.popularmovies.data.provider.MoviesContract;
 import com.example.popularmovies.models.MovieBean;
 
 import java.util.List;
@@ -22,6 +24,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.example.popularmovies.data.provider.MoviesContract.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupRecyclerView();
+    }
+
+    private void loadFavoriteMovies() {
+        final Cursor cursor = getContentResolver().query(Movies.CONTENT_URI, null, null, null, null);
     }
 
     private void getMovies(String moviesSortOrder) {
