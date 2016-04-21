@@ -8,4 +8,17 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Movie details -->
+    <style name="section_header">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+
+    <style name="favorite_button" parent="Widget.AppCompat.Light.ActionButton">
+        <item name="android:layout_height">@dimen/abc_action_button_min_height_material</item>
+        <item name="android:layout_width">@dimen/abc_action_button_min_height_material</item>
+        <item name="android:src">@drawable/selector_favorite_button</item>
+    </style>
+
 </resources>

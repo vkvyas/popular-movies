@@ -35,6 +35,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static com.example.popularmovies.data.provider.MoviesContract.Movies;
+
 /**
  * Created by vishal vyas on 21/04/16.
  */
@@ -75,12 +77,22 @@ public class MovieDetailsFragment extends Fragment {
 
         loadTrailers(movieBean);
         loadReviews(movieBean);
+
+        View btnFavorites = viewGroup.findViewById(R.id.btnFavorites);
+        btnFavorites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri insert = getContext().getContentResolver()
+                        .insert(Movies.CONTENT_URI, Movies.toContentValues(movieBean));
+                Log.d(TAG, "Uri result " + insert.toString());
+            }
+        });
         return viewGroup;
     }
 
     private void loadTrailers(MovieBean movieBean) {
         HttpUrl.Builder urlBuilder =
-                HttpUrl.parse(MainActivity.THE_MOVIE_DB_BASE_URL + "/movie/" + movieBean.getId() + "/videos").newBuilder();
+                HttpUrl.parse(MainActivity.THE_MOVIE_DB_BASE_URL + "movie/" + movieBean.getId() + "/videos").newBuilder();
         urlBuilder.addQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
         String url = urlBuilder.build().toString();
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -132,7 +144,9 @@ public class MovieDetailsFragment extends Fragment {
 
     private void loadReviews(MovieBean movieBean) {
         HttpUrl.Builder urlBuilder =
-                HttpUrl.parse(MainActivity.THE_MOVIE_DB_BASE_URL + "/movie/" + movieBean.getId() + "/reviews").newBuilder();
+                HttpUrl.parse(MainActivity.THE_MOVIE_DB_BASE_URL + "movie/" + movieBean.getId() + "/reviews").newBuilder();
+
+        Log.d(TAG, "loading reviews for " + movieBean.getId());
         urlBuilder.addQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
         String url = urlBuilder.build().toString();
         OkHttpClient okHttpClient = new OkHttpClient();

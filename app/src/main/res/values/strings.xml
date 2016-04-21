@@ -9,4 +9,6 @@
         <item>Most popular</item>
         <item>Top rated</item>
     </string-array>
+
+    <string name="content_authority">com.example.popularmovies</string>
 </resources>

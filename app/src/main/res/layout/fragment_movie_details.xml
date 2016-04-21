@@ -28,7 +28,7 @@
         <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/imgPoster"
             android:layout_width="200dp"
-            android:layout_height="310dp"
+            android:layout_height="280dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_below="@+id/txtTitle"
@@ -45,7 +45,7 @@
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_marginTop="10dp"
             android:text="Overview"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
             android:id="@+id/txtRating"
@@ -66,52 +66,34 @@
             android:layout_marginTop="30dp"
             android:layout_toEndOf="@+id/imgPoster"
             android:layout_toRightOf="@+id/imgPoster"
-            android:text="Release \n2016-03-23"
+            android:text="Released on\n2016-03-23"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <TextView
-            android:id="@+id/lblTrailers"
+        <ImageButton
+            android:id="@+id/btnFavorites"
+            style="@style/favorite_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/txtOverview"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_alignLeft="@id/txtReleaseDate"
+            android:layout_below="@+id/txtReleaseDate"
             android:layout_marginTop="10dp"
-            android:text="Trailers"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:tint="@color/colorAccent" />
 
-        <LinearLayout
-            android:id="@+id/lytTrailers"
+        <include
+            android:id="@+id/lytTrailersParent"
+            layout="@layout/row_movie_trailers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@id/lblTrailers"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin" />
+            android:layout_below="@id/txtOverview"
+            android:layout_marginTop="5dp" />
 
-        <TextView
-            android:id="@+id/lblReviews"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/lytTrailers"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="10dp"
-            android:text="Reviews"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <LinearLayout
-            android:id="@+id/lytReviews"
+        <include
+            android:id="@+id/lytReviewsParent"
+            layout="@layout/row_movie_reviews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@id/lblReviews"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin" />
+            android:layout_below="@id/lytTrailersParent"
+            android:layout_marginTop="5dp" />
 
 
     </RelativeLayout>

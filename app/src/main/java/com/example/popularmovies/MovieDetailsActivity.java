@@ -29,5 +29,4 @@ public class MovieDetailsActivity extends AppCompatActivity {
             fragmentTransaction.commit();
         }
     }
-
 }

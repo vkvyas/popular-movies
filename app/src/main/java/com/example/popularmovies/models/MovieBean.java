@@ -3,17 +3,39 @@ package com.example.popularmovies.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by vishalvyas on 4/18/16.
  */
 public class MovieBean implements Parcelable {
+    @Expose
+    @SerializedName("id")
     private String id;
+    @Expose
+    @SerializedName("title")
     private String title;
+    @Expose
+    @SerializedName("poster_path")
     private String posterPath;
+    @Expose
+    @SerializedName("release_date")
     private String releaseDate;
+    @Expose
+    @SerializedName("vote_count")
     private String voteCount;
+    @Expose
+    @SerializedName("vote_average")
     private String voteAverage;
+    @Expose
+    @SerializedName("original_title")
     private String originalTitle;
+    @Expose
+    @SerializedName("overview")
     private String overview;
 
     public MovieBean() {
@@ -122,5 +144,23 @@ public class MovieBean implements Parcelable {
             return new MovieBean[size];
         }
     };
+
+    public static final class Response {
+
+        @Expose
+        public int page;
+
+        @Expose
+        @SerializedName("total_pages")
+        public int totalPages;
+
+        @Expose
+        @SerializedName("total_results")
+        public int totalMovies;
+
+        @Expose
+        @SerializedName("results")
+        public List<MovieBean> lstMovies = new ArrayList<>();
+    }
 
 }
