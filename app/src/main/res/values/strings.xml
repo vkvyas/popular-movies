@@ -12,4 +12,5 @@
     </string-array>
 
     <string name="content_authority">com.example.popularmovies</string>
+    <string name="message_empty_movie_fragment">Select Movie</string>
 </resources>

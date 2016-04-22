@@ -59,6 +59,11 @@ public class MovieDetailsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        if (getArguments() == null) {
+            Log.e(TAG, "No Bundle arguments!!");
+            return null;
+        }
+        final MovieBean movieBean = getArguments().getParcelable(MovieDetailsActivity.MOVIE_PARCEL);
         final ViewGroup viewGroup = (ViewGroup) inflater.inflate
                 (R.layout.fragment_movie_details, container, false);
         final TextView txtTitle = (TextView) viewGroup.findViewById(R.id.txtTitle);
@@ -69,13 +74,11 @@ public class MovieDetailsFragment extends Fragment {
         lytTrailers = (ViewGroup) viewGroup.findViewById(R.id.lytTrailers);
         lytReviews = (ViewGroup) viewGroup.findViewById(R.id.lytReviews);
 
-        final MovieBean movieBean = getArguments().getParcelable(MovieDetailsActivity.MOVIE_PARCEL);
-        if (movieBean != null) {
-            txtTitle.setText(movieBean.getOriginalTitle());
-            txtOverview.setText(movieBean.getOverview());
-            txtReleaseDate.setText("Release Date\n" + movieBean.getReleaseDate());
-            txtRating.setText("Rating\n" + movieBean.getVoteAverage());
-        }
+        txtTitle.setText(movieBean.getOriginalTitle());
+        txtOverview.setText(movieBean.getOverview());
+        txtReleaseDate.setText("Release Date\n" + movieBean.getReleaseDate());
+        txtRating.setText("Rating\n" + movieBean.getVoteAverage());
+
         Picasso.with(getActivity().getApplicationContext())
                 .load(MoviesAdapter.HTTP_BASE_URL_FOR_IMAGES + movieBean.getPosterPath())
                 .into(imgPoster);

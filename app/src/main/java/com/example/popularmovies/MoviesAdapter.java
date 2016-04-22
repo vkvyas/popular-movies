@@ -1,12 +1,12 @@
 package com.example.popularmovies;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.popularmovies.fragments.MoviesFragment;
 import com.example.popularmovies.models.MovieBean;
 import com.squareup.picasso.Picasso;
 
@@ -22,10 +22,15 @@ public class MoviesAdapter extends RecyclerView.Adapter<ImageViewHolder> {
 
     private List<MovieBean> mLstMovies;
     private Context mContext;
+    private MoviesFragment.CallbackMovieClicked mCallback;
 
     public MoviesAdapter(Context context, List<MovieBean> lstMovies) {
         mLstMovies = lstMovies;
         mContext = context;
+    }
+
+    public void setMovieClickedCallback(MoviesFragment.CallbackMovieClicked callback) {
+        this.mCallback = callback;
     }
 
     @Override
@@ -40,13 +45,14 @@ public class MoviesAdapter extends RecyclerView.Adapter<ImageViewHolder> {
         Picasso.with(mContext)
                 .load(HTTP_BASE_URL_FOR_IMAGES + movieBean.getPosterPath())
                 .into(holder.imageView);
+        holder.imageView.setTag(movieBean);
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = v.getContext();
-                Intent intent = new Intent(context, MovieDetailsActivity.class);
-                intent.putExtra(MovieDetailsActivity.MOVIE_PARCEL, movieBean);
-                context.startActivity(intent);
+                if (mCallback != null) {
+                    MovieBean movieBean = (MovieBean) v.getTag();
+                    mCallback.onMovieClicked(movieBean);
+                }
             }
         });
     }
@@ -54,5 +60,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<ImageViewHolder> {
     @Override
     public int getItemCount() {
         return mLstMovies.size();
+    }
+
+    public MovieBean getItem(int position) {
+        return mLstMovies.get(position);
     }
 }

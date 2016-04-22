@@ -18,7 +18,7 @@ android {
         }
     }
     buildTypes.each {
-        it.buildConfigField 'String', 'THE_MOVIE_DB_API_KEY', '"b6267c089cade0eccdb1732984aa12b9"'
+        it.buildConfigField 'String', 'THE_MOVIE_DB_API_KEY', MyMovieDbApiKey
     }
 }
 
@@ -33,4 +33,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.squareup.retrofit2:retrofit:2.0.2'
     compile 'com.squareup.retrofit2:converter-gson:2.0.2'
+
+    compile 'io.reactivex:rxandroid:1.1.0'
+    compile 'io.reactivex:rxjava:1.1.3'
 }

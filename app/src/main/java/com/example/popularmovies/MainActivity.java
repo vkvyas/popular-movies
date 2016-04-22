@@ -1,120 +1,46 @@
 package com.example.popularmovies;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
-import com.example.popularmovies.data.api.MoviesApi;
+import com.example.popularmovies.fragments.MovieDetailsFragment;
+import com.example.popularmovies.fragments.MoviesFragment;
 import com.example.popularmovies.models.MovieBean;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+public class MainActivity extends AppCompatActivity implements MoviesFragment.CallbackMovieClicked {
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-import static com.example.popularmovies.data.provider.MoviesContract.Movies;
-import static com.example.popularmovies.data.provider.MoviesContract.MoviesColumns;
-
-public class MainActivity extends AppCompatActivity {
-
-    private RecyclerView recyclerView;
-    public static final String TAG = "PM_TAG";
     public static final String THE_MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3/";
+    private static final String MOVIES_FRAGMENT_TAG = "movies_fragment_tag";
+    private static final String MOVIES_DETAILS_FRAGMENT_TAG = "movies_details_fragment_tag";
+    private boolean mTwoPane;
+    View lblNoMovieSelected;
+    private MoviesFragment moviesFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setupRecyclerView();
-    }
-
-    private List<MovieBean> getSavedMovies() {
-        final Cursor cursor = getContentResolver().query(Movies.CONTENT_URI, null, null, null, null);
-        if (cursor != null && cursor.getCount() > 0) {
-            try {
-                List<MovieBean> lstMovies = new ArrayList<>();
-                while (cursor.moveToNext()) {
-                    MovieBean movieBean = new MovieBean();
-                    movieBean.setId(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_ID)));
-                    movieBean.setOriginalTitle(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_ORIGINAL_TITLE)));
-                    movieBean.setOverview(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_OVERVIEW)));
-                    movieBean.setPosterPath(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_POSTER_PATH)));
-                    movieBean.setReleaseDate(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_RELEASE_DATE)));
-                    movieBean.setTitle(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_TITLE)));
-                    movieBean.setVoteAverage(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_VOTE_AVERAGE)));
-                    movieBean.setVoteCount(cursor.getString(cursor.getColumnIndex(MoviesColumns.MOVIE_VOTE_COUNT)));
-                    lstMovies.add(movieBean);
-                }
-                return lstMovies;
-            } finally {
-                cursor.close();
+        mTwoPane = findViewById(R.id.movie_details_container) != null;
+        if (savedInstanceState == null) {
+            moviesFragment = MoviesFragment.newInstance(null);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.add(R.id.content, moviesFragment, MOVIES_FRAGMENT_TAG);
+            if (mTwoPane) {
+                lblNoMovieSelected = findViewById(R.id.lblNoMovieSelected);
+                final MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(null);
+                FragmentTransaction fragmentTransaction1 = fragmentManager.beginTransaction();
+                fragmentTransaction1.replace(R.id.movie_details_container, movieDetailsFragment, MOVIES_DETAILS_FRAGMENT_TAG);
             }
-        } else {
-            return Collections.EMPTY_LIST;
+            fragmentTransaction.commit();
         }
-    }
-
-    private void getMovies(String moviesSortOrder) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(THE_MOVIE_DB_BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        MoviesApi moviesApi = retrofit.create(MoviesApi.class);
-        Call<MovieBean.Response> moviesCall = null;
-        if (TextUtils.isEmpty(moviesSortOrder) || moviesSortOrder.equalsIgnoreCase("Most popular")) {
-            moviesCall = moviesApi.popularMovies();
-        } else if (moviesSortOrder.equalsIgnoreCase("favorites")) {
-            final List<MovieBean> savedMovies = getSavedMovies();
-            recyclerView.setAdapter(new MoviesAdapter(recyclerView.getContext(), savedMovies));
-        } else {
-            moviesCall = moviesApi.topRatedMovies();
-        }
-        if (moviesCall == null) {
-            return;
-        }
-        moviesCall.enqueue(new Callback<MovieBean.Response>() {
-            @Override
-            public void onResponse(Call<MovieBean.Response> call, Response<MovieBean.Response> response) {
-                List<MovieBean> lstMovies = response.body().lstMovies;
-                if (lstMovies == null)
-                    Log.d(TAG, "Empty movies list");
-                recyclerView.setAdapter(new MoviesAdapter(recyclerView.getContext(), lstMovies));
-            }
-
-            @Override
-            public void onFailure(Call<MovieBean.Response> call, Throwable t) {
-
-            }
-        });
-    }
-
-    private void setupRecyclerView() {
-        recyclerView = (RecyclerView) findViewById(
-                R.id.recyclerView);
-        recyclerView.addItemDecoration(new MarginDecoration(this));
-        recyclerView.setHasFixedSize(true);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final String moviesSortOrder = prefs.getString("movies_sort_order", null);
-        getMovies(moviesSortOrder);
     }
 
     @Override
@@ -131,5 +57,27 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMovieClicked(MovieBean movieBean) {
+        if (mTwoPane) {
+            lblNoMovieSelected.setVisibility(View.GONE);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(MovieDetailsActivity.MOVIE_PARCEL, movieBean);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            final MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(bundle);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.movie_details_container, movieDetailsFragment, MOVIES_DETAILS_FRAGMENT_TAG);
+            fragmentTransaction.commit();
+        }
+    }
+
+    @Override
+    public void onMoviesLoaded() {
+        if (mTwoPane) {
+            MovieBean movieBean = moviesFragment.getMoviesAdapter().getItem(0);
+            onMovieClicked(movieBean);
+        }
     }
 }
