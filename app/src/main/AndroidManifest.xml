@@ -28,6 +28,16 @@
             android:exported="false"
             android:label="@string/app_name"
             android:syncable="true" />
+
+        <service
+            android:name=".service.TodoIntentService"
+            android:exported="false" />
+
+        <receiver android:name=".NetworkChangeReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

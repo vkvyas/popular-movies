@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import com.example.popularmovies.MainActivity;
 import com.example.popularmovies.MarginDecoration;
 import com.example.popularmovies.MoviesAdapter;
+import com.example.popularmovies.NetworkChangeReceiver;
 import com.example.popularmovies.R;
 import com.example.popularmovies.data.api.MoviesApi;
 import com.example.popularmovies.data.provider.MoviesContract;
@@ -41,12 +42,14 @@ import rx.schedulers.Schedulers;
 /**
  * Created by vishalvyas on 4/22/16.
  */
-public class MoviesFragment extends Fragment {
+public class MoviesFragment extends Fragment implements NetworkChangeReceiver.NetworkConnectedListener {
 
     private RecyclerView recyclerView;
     public static final String TAG = "MoviesFragment";
     private CallbackMovieClicked mCallback;
     private MoviesAdapter mMoviesAdapter;
+
+    NetworkChangeReceiver networkChangeReceiver;
 
     public static MoviesFragment newInstance(Bundle bundle) {
         MoviesFragment moviesFragment = new MoviesFragment();
@@ -68,6 +71,10 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        loadMovies();
+    }
+
+    private void loadMovies() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         final String moviesSortOrder = prefs.getString("movies_sort_order", "Most popular");
         getMovies(moviesSortOrder);
@@ -77,6 +84,7 @@ public class MoviesFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mCallback = (CallbackMovieClicked) getActivity();
+        networkChangeReceiver = new NetworkChangeReceiver(this);
     }
 
     private void setupRecyclerView() {
@@ -115,7 +123,7 @@ public class MoviesFragment extends Fragment {
                         cursor.close();
                     }
                 } else {
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 }
             }
         });
@@ -209,6 +217,11 @@ public class MoviesFragment extends Fragment {
 
     public MoviesAdapter getMoviesAdapter() {
         return mMoviesAdapter;
+    }
+
+    @Override
+    public void onConnected() {
+        loadMovies();
     }
 
     public interface CallbackMovieClicked {
