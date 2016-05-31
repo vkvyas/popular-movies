@@ -13,6 +13,9 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
 
     NetworkConnectedListener networkConnectedListener;
 
+    public NetworkChangeReceiver() {
+    }
+
     public NetworkChangeReceiver(NetworkConnectedListener networkConnectedListener) {
         this.networkConnectedListener = networkConnectedListener;
     }

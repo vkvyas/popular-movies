@@ -49,8 +49,6 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
     private CallbackMovieClicked mCallback;
     private MoviesAdapter mMoviesAdapter;
 
-    NetworkChangeReceiver networkChangeReceiver;
-
     public static MoviesFragment newInstance(Bundle bundle) {
         MoviesFragment moviesFragment = new MoviesFragment();
         moviesFragment.setArguments(bundle);
@@ -84,7 +82,6 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mCallback = (CallbackMovieClicked) getActivity();
-        networkChangeReceiver = new NetworkChangeReceiver(this);
     }
 
     private void setupRecyclerView() {
@@ -199,9 +196,16 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
         moviesCall.enqueue(new Callback<MovieBean.Response>() {
             @Override
             public void onResponse(Call<MovieBean.Response> call, Response<MovieBean.Response> response) {
-                List<MovieBean> lstMovies = response.body().lstMovies;
-                if (lstMovies == null)
+                MovieBean.Response body = response.body();
+                if (null == body) {
+                    Log.d(TAG, "Empty response body.");
+                    return;
+                }
+                List<MovieBean> lstMovies = body.lstMovies;
+                if (lstMovies == null) {
                     Log.d(TAG, "Empty movies list");
+                    return;
+                }
                 mMoviesAdapter = new MoviesAdapter(recyclerView.getContext(), lstMovies);
                 mMoviesAdapter.setMovieClickedCallback(mCallback);
                 recyclerView.setAdapter(mMoviesAdapter);

@@ -1,6 +1,8 @@
 package com.example.popularmovies;
 
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -23,6 +25,9 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Ca
     View lblNoMovieSelected;
     private MoviesFragment moviesFragment;
 
+    NetworkChangeReceiver networkChangeReceiver;
+    IntentFilter intentFilter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +46,20 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Ca
             }
             fragmentTransaction.commit();
         }
+        networkChangeReceiver = new NetworkChangeReceiver(moviesFragment);
+        intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiver(networkChangeReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(networkChangeReceiver);
     }
 
     @Override
@@ -61,16 +80,20 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Ca
 
     @Override
     public void onMovieClicked(MovieBean movieBean) {
+        int lytContainer;
         if (mTwoPane) {
+            lytContainer = R.id.movie_details_container;
             lblNoMovieSelected.setVisibility(View.GONE);
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(MovieDetailsActivity.MOVIE_PARCEL, movieBean);
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            final MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(bundle);
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.movie_details_container, movieDetailsFragment, MOVIES_DETAILS_FRAGMENT_TAG);
-            fragmentTransaction.commit();
+        } else {
+            lytContainer = R.id.content;
         }
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(MovieDetailsActivity.MOVIE_PARCEL, movieBean);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        final MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(bundle);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(lytContainer, movieDetailsFragment, MOVIES_DETAILS_FRAGMENT_TAG);
+        fragmentTransaction.commit();
     }
 
     @Override
