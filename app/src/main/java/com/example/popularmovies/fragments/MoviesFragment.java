@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,6 +44,8 @@ import rx.schedulers.Schedulers;
  * Created by vishalvyas on 4/22/16.
  */
 public class MoviesFragment extends Fragment implements NetworkChangeReceiver.NetworkConnectedListener {
+
+    private static final String LIST_POSITION = "list_position";
 
     private RecyclerView recyclerView;
     public static final String TAG = "MoviesFragment";
@@ -82,6 +85,19 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mCallback = (CallbackMovieClicked) getActivity();
+        if (savedInstanceState != null) {
+            boolean containsListPos = savedInstanceState.containsKey(LIST_POSITION);
+            if (containsListPos) {
+                recyclerView.getLayoutManager().scrollToPosition(savedInstanceState.getInt(LIST_POSITION));
+            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        int mScrollPosition = ((GridLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        outState.putInt(LIST_POSITION, mScrollPosition);
     }
 
     private void setupRecyclerView() {
