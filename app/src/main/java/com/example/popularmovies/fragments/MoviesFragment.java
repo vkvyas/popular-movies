@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -46,11 +47,13 @@ import rx.schedulers.Schedulers;
 public class MoviesFragment extends Fragment implements NetworkChangeReceiver.NetworkConnectedListener {
 
     private static final String LIST_POSITION = "list_position";
+    private static final String SAVED_MOVIES = "saved_movies";
 
     private RecyclerView recyclerView;
     public static final String TAG = "MoviesFragment";
     private CallbackMovieClicked mCallback;
     private MoviesAdapter mMoviesAdapter;
+    private List<MovieBean> mSavedMovies;
 
     public static MoviesFragment newInstance(Bundle bundle) {
         MoviesFragment moviesFragment = new MoviesFragment();
@@ -76,9 +79,16 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
     }
 
     private void loadMovies() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        final String moviesSortOrder = prefs.getString("movies_sort_order", "Most popular");
-        getMovies(moviesSortOrder);
+        if (mSavedMovies == null || mSavedMovies.isEmpty()) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+            final String moviesSortOrder = prefs.getString("movies_sort_order", "Most popular");
+            getMovies(moviesSortOrder);
+        } else {
+            mMoviesAdapter = new MoviesAdapter(recyclerView.getContext(), mSavedMovies);
+            mMoviesAdapter.setMovieClickedCallback(mCallback);
+            recyclerView.setAdapter(mMoviesAdapter);
+            mCallback.onMoviesLoaded();
+        }
     }
 
     @Override
@@ -86,18 +96,32 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
         super.onActivityCreated(savedInstanceState);
         mCallback = (CallbackMovieClicked) getActivity();
         if (savedInstanceState != null) {
-            boolean containsListPos = savedInstanceState.containsKey(LIST_POSITION);
-            if (containsListPos) {
+            Log.d(TAG, "found savedInstanceState");
+            boolean containsKey = savedInstanceState.containsKey(LIST_POSITION);
+            if (containsKey) {
+                int listPosition = savedInstanceState.getInt(LIST_POSITION);
+                Log.d(TAG, "listPosition " + listPosition);
                 recyclerView.getLayoutManager().scrollToPosition(savedInstanceState.getInt(LIST_POSITION));
             }
+            containsKey = savedInstanceState.containsKey(SAVED_MOVIES);
+            Log.d(TAG, "SAVED_MOVIES " + containsKey);
+            if (containsKey) {
+                mSavedMovies = savedInstanceState.getParcelableArrayList(SAVED_MOVIES);
+                if (mSavedMovies != null) {
+                    Log.d(TAG, "mSavedMovies " + mSavedMovies.size());
+                }
+            }
+
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         int mScrollPosition = ((GridLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
         outState.putInt(LIST_POSITION, mScrollPosition);
+        Log.d(TAG, "storing state of movies " + mSavedMovies.size());
+        outState.putParcelableArrayList(SAVED_MOVIES, (ArrayList<? extends Parcelable>) mSavedMovies);
+        super.onSaveInstanceState(outState);
     }
 
     private void setupRecyclerView() {
@@ -194,7 +218,8 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
                     .subscribe(new Action1<List<MovieBean>>() {
                         @Override
                         public void call(List<MovieBean> savedMovies) {
-                            mMoviesAdapter = new MoviesAdapter(recyclerView.getContext(), savedMovies);
+                            mSavedMovies = savedMovies;
+                            mMoviesAdapter = new MoviesAdapter(recyclerView.getContext(), mSavedMovies);
                             mMoviesAdapter.setMovieClickedCallback(mCallback);
                             recyclerView.setAdapter(mMoviesAdapter);
                             mCallback.onMoviesLoaded();
@@ -217,12 +242,13 @@ public class MoviesFragment extends Fragment implements NetworkChangeReceiver.Ne
                     Log.d(TAG, "Empty response body.");
                     return;
                 }
-                List<MovieBean> lstMovies = body.lstMovies;
-                if (lstMovies == null) {
+                mSavedMovies = body.lstMovies;
+                if (mSavedMovies == null) {
                     Log.d(TAG, "Empty movies list");
                     return;
                 }
-                mMoviesAdapter = new MoviesAdapter(recyclerView.getContext(), lstMovies);
+
+                mMoviesAdapter = new MoviesAdapter(recyclerView.getContext(), mSavedMovies);
                 mMoviesAdapter.setMovieClickedCallback(mCallback);
                 recyclerView.setAdapter(mMoviesAdapter);
                 mCallback.onMoviesLoaded();
