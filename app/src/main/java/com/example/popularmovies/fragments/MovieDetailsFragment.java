@@ -19,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.popularmovies.BuildConfig;
 import com.example.popularmovies.MainActivity;
@@ -42,6 +43,11 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func0;
+import rx.schedulers.Schedulers;
 
 import static com.example.popularmovies.data.provider.MoviesContract.Movies;
 
@@ -106,14 +112,59 @@ public class MovieDetailsFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 final Uri uri = Uri.withAppendedPath(Movies.CONTENT_URI, movieBean.getId());
                 if (isChecked) {
-                    contentResolver.insert(uri, Movies.toContentValues(movieBean)
-                    );
+                    getInsertObservable(uri, contentResolver, movieBean)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Action1<Boolean>() {
+                                @Override
+                                public void call(Boolean aBoolean) {
+                                    if (aBoolean) {
+                                        Toast.makeText(getContext(), "Added to your favorites list!", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                 } else {
-                    contentResolver.delete(uri, null, null);
+                    getDeleteObservable(uri, contentResolver)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Action1<Boolean>() {
+                                @Override
+                                public void call(Boolean aBoolean) {
+                                    if (aBoolean) {
+                                        Toast.makeText(getContext(), "Deleted from your favorites list!", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                 }
             }
         });
         return viewGroup;
+    }
+
+    Observable<Boolean> getDeleteObservable(final Uri uri, final ContentResolver contentResolver) {
+        return Observable.defer(new Func0<Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call() {
+                return Observable.just(deleteFromDb(uri, contentResolver));
+            }
+        });
+    }
+
+    private Boolean deleteFromDb(Uri uri, ContentResolver contentResolver) {
+        return contentResolver.delete(uri, null, null) >= 1;
+    }
+
+    Observable<Boolean> getInsertObservable(final Uri uri, final ContentResolver contentResolver, final MovieBean movieBean) {
+        return Observable.defer(new Func0<Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call() {
+                return Observable.just(insertIntoDb(uri, contentResolver, movieBean));
+            }
+        });
+    }
+
+    private Boolean insertIntoDb(Uri uri, ContentResolver contentResolver, MovieBean movieBean) {
+        return contentResolver.insert(uri, Movies.toContentValues(movieBean)) != null;
     }
 
     @Override
