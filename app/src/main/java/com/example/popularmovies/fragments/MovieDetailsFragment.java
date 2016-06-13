@@ -8,8 +8,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -49,11 +52,18 @@ public class MovieDetailsFragment extends Fragment {
 
     ViewGroup lytTrailers, lytReviews;
     private static final String TAG = "MovieDetailsFragment";
+    private ActionBar supportActionBar;
 
     public static MovieDetailsFragment newInstance(Bundle bundle) {
         MovieDetailsFragment movieDetailsFragment = new MovieDetailsFragment();
         movieDetailsFragment.setArguments(bundle);
         return movieDetailsFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -104,6 +114,23 @@ public class MovieDetailsFragment extends Fragment {
             }
         });
         return viewGroup;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                getActivity().onBackPressed();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private boolean isMovieFavourite(MovieBean movieBean) {

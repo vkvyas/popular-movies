@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Ca
                 final MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(null);
                 FragmentTransaction fragmentTransaction1 = fragmentManager.beginTransaction();
                 fragmentTransaction1.replace(R.id.movie_details_container, movieDetailsFragment, MOVIES_DETAILS_FRAGMENT_TAG);
+                fragmentTransaction1.addToBackStack(MOVIES_DETAILS_FRAGMENT_TAG);
             }
             fragmentTransaction.commit();
         }
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Ca
         final MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(bundle);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(lytContainer, movieDetailsFragment, MOVIES_DETAILS_FRAGMENT_TAG);
+        fragmentTransaction.addToBackStack(MOVIES_DETAILS_FRAGMENT_TAG);
         fragmentTransaction.commit();
     }
 
